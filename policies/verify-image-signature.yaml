@@ -23,13 +23,16 @@ spec:
       verifyImages:
         - imageReferences:
             - "ghcr.io/vicgrey/signed-and-guarded*"
-          mutateDigest: true
+          imageRegistryCredentials:
+            secrets:
+              - ghcr-cred
+          mutateDigest: false
           verifyDigest: true
           required: true
           attestors:
             - entries:
                 - keyless:
                     issuer: "https://token.actions.githubusercontent.com"
-                    subject: "https://github.com/vicGrey/signed-and-guarded/.github/workflows/build-sign.yml@refs/heads/main"
+                    subject: "*signed-and-guarded*"
                     rekor:
                       url: "https://rekor.sigstore.dev"
