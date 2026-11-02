@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-root-pod
+  labels:
+    app: bad-root-test
+spec:
+  containers:
+    - name: app
+      image: busybox:1.36.1
+      command: ["sh", "-c", "sleep 3600"]
+      # Intentionally missing securityContext runAsNonRoot: true
