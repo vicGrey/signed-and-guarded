@@ -6,13 +6,13 @@
 
 Cryptographic signing (Cosign) and admission control (Kyverno) guarantee **workflow provenance and artifact integrity**, not **code safety**. If an attacker merges malicious application logic into `main`, or edits `.github/workflows/build-sign.yml` on `main` to remove security scanners, the workflow will still produce a valid signature and Kyverno will admit the pod. Protecting `main` requires upstream Git controls: branch protection with mandatory review first, plus commit signing (which proves who authored a commit, not that it is safe).
 
-The pipeline covers a FastAPI workload deployed to a local kind cluster and a short-lived AWS EKS demo cluster. Admitted images were signed by `.github/workflows/build-sign.yml` on `main`. Secret and vulnerability scans run before signing in that workflow, but Kubernetes admission does not cryptographically verify scan results unless the Stage 4 attestation policy is enabled.
+The pipeline covers a FastAPI workload deployed to a local kind cluster and a planned short-lived AWS EKS demo cluster. Admitted images were signed by `.github/workflows/build-sign.yml` on `main`. Secret and vulnerability scans run before signing in that workflow, but Kubernetes admission does not cryptographically verify scan results unless the Stage 4 attestation policy is enabled.
 
 ---
 
 ## 2. Stage Numbering Reference
 
-Every threat and test maps to the stage sequence defined in `PLAN.md` (Stage 0 threat model through Stage 6 AWS EKS/ECR port).
+Every threat and test maps to the stage sequence defined in `PLAN.md` (Stage 0 threat model through Stage 5 AWS EKS/ECR port).
 
 ---
 
@@ -24,7 +24,7 @@ Every threat and test maps to the stage sequence defined in `PLAN.md` (Stage 0 t
   2. Fulcio (Sigstore's CA, `fulcio.sigstore.dev`) exchanges that token for a short-lived signing certificate bound to the workflow identity.
   3. The signature and certificate are logged as a transparency entry in Rekor.
 - **Storage boundary (container registry, GHCR or AWS ECR):** Treated as untrusted storage. Write access to the registry alone must not allow execution in the cluster.
-- **Execution boundary (Kubernetes admission control, Kyverno):** Intercepts Pod creation requests at the Kubernetes API server, verifies cryptographic signatures and attestations against Rekor/Fulcio and pinned workflow identities, rewrites tags to immutable digests, and enforces container hardening.
+- **Execution boundary (Kubernetes admission control, Kyverno):** Intercepts Pod creation requests at the Kubernetes API server, verifies cryptographic signatures and attestations against Rekor/Fulcio and pinned workflow identities via modern `ImageValidatingPolicy`, and enforces container hardening.
 
 ---
 
@@ -33,10 +33,10 @@ Every threat and test maps to the stage sequence defined in `PLAN.md` (Stage 0 t
 ### T-01: Direct registry push (CI bypass)
 
 - **Threat / attack vector:** An attacker with registry push access builds an image locally, skipping CI, and pushes it directly to GHCR/ECR.
-- **Security control and honest limits:** Keyless image signing in CI (`cosign sign` by digest) + Kyverno `verifyImages` policy requiring a valid signature.
+- **Security control and honest limits:** Keyless image signing in CI (`cosign sign` by digest) + Kyverno `ImageValidatingPolicy` requiring a valid signature.
 - **Enforcement layer:** Sigstore + Kyverno
 - **Stage:** 2 & 3
-- **Verification test:** Push an unsigned image from local Docker CLI to registry and deploy -> **Rejected** (`image verification failed: no matching signatures`).
+- **Verification test:** Push an unsigned image from local Docker CLI to registry and deploy -> **Rejected** (`Image signature verification failed: image must be signed by vicGrey/signed-and-guarded via GitHub Actions OIDC on main`).
 
 ### T-02: Mutable tag overwrite (`:latest` or re-tagging)
 
@@ -56,7 +56,7 @@ Every threat and test maps to the stage sequence defined in `PLAN.md` (Stage 0 t
 ### T-03: Unauthorized workflow, branch, or fork signing
 
 - **Threat / attack vector:** An attacker triggers CI from a fork PR, an unreviewed feature branch, a modified workflow file, or another repository to obtain a valid Cosign signature.
-- **Security control and honest limits:** Strict OIDC pinning in Kyverno `verifyImages`:
+- **Security control and honest limits:** Strict OIDC pinning in Kyverno `ImageValidatingPolicy`:
   - Issuer: `https://token.actions.githubusercontent.com`
   - Subject: exact repo and workflow ref ending in `@refs/heads/main`.
   - The workflow never uses `pull_request_target`, which would let fork code run with base-repo permissions, OIDC included.

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-branch-pod
+  labels:
+    app: bad-branch-test
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    runAsGroup: 10001
+  containers:
+    - name: app
+      # Validly signed image, BUT signed on feat/untrusted-branch instead of main!
+      image: ghcr.io/vicgrey/signed-and-guarded@sha256:21d72ae61f704c8600ab76f9d23304b9ccf34f7fd93e02a66dfdc0d168132284
+      securityContext:
+        allowPrivilegeEscalation: false
+        privileged: false
+        capabilities:
+          drop:
+            - ALL
