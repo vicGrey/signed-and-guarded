@@ -1,19 +1,20 @@
 ==================================================
   STAGE 3 EVIDENCE: CRYPTOGRAPHIC SIGNATURE ENFORCEMENT
-  Timestamp: Mon Nov  2 12:05:15 UTC 2026
+  Timestamp: Mon Nov  2 13:37:11 UTC 2026
 ==================================================
 
-[TEST 1] Applying verified signed pod:
+[TEST 1: APPLY CRYPTOGRAPHICALLY SIGNED POD]
 $ kubectl apply -f k8s/good/signed-pod.yaml
 pod/signed-service-pod created
->>> SUCCESS: Cryptographically signed image was admitted.
+>>> SUCCESS: Valid keyless signature from GitHub Actions OIDC on main admitted.
 
-[POD STATUS]
+[POD RUNNING STATE]
 $ kubectl get pods
 NAME                 READY   STATUS    RESTARTS   AGE
 signed-service-pod   1/1     Running   0          56s
 
-[TEST 2] Applying untrusted/unsigned manifest:
+[TEST 2: APPLY REAL UNSIGNED IMAGE FROM REGISTRY]
+Direct registry push (T-01) bypass test deploying real unsigned image:
 $ kubectl apply -f k8s/bad/unsigned-pod.yaml
-Error from server: error when creating "k8s/bad/unsigned-pod.yaml": admission webhook "ivpol.mutate.kyverno.svc-fail" denied the request: Policy check-image-signature error: failed to updatedigest: failed to resolve digest for image ghcr.io/vicgrey/signed-and-guarded:unsigned-fake: GET https://ghcr.io/v2/vicgrey/signed-and-guarded/manifests/unsigned-fake: MANIFEST_UNKNOWN: manifest unknown
->>> SUCCESS: Untrusted image was blocked at admission webhook.
+Error from server: error when creating "k8s/bad/unsigned-pod.yaml": admission webhook "ivpol.validate.kyverno.svc-fail" denied the request: Policy check-image-signature failed: Image signature verification failed: image must be signed by vicGrey/signed-and-guarded via GitHub Actions OIDC on main.
+>>> SUCCESS: Cryptographically verified denial by modern Kyverno ImageValidatingPolicy CEL engine.
