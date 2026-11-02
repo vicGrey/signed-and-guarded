@@ -1,0 +1,44 @@
+==================================================
+  STAGE 1 VERIFICATION: KYVERNO BASELINE HARDENING
+  Timestamp: Mon Nov  2 09:59:35 UTC 2026
+==================================================
+
+[TEST 1] Applying compliant manifest (k8s/good/compliant-pod.yaml)...
+pod/good-pod created
+>>> SUCCESS: Compliant pod was admitted as expected.
+
+[TEST 2] Applying violating manifest: latest tag (k8s/bad/bad-latest.yaml)...
+Error from server: error when creating "k8s/bad/bad-latest.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/default/bad-latest-pod was blocked due to the following policies 
+
+disallow-latest-tag:
+  require-image-tag: 'validation error: Using the '':latest'' tag or omitting an image
+    tag is prohibited. Use an explicit tag or digest. rule require-image-tag failed
+    at path /spec/containers/0/image/'
+>>> SUCCESS: bad-latest pod was rejected by Kyverno as expected.
+
+[TEST 3] Applying violating manifest: privileged container (k8s/bad/bad-privileged.yaml)...
+Error from server: error when creating "k8s/bad/bad-privileged.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/default/bad-privileged-pod was blocked due to the following policies 
+
+disallow-privileged-containers:
+  check-privileged: 'validation error: Privileged containers are not allowed. ''securityContext.privileged''
+    must be set to false or omitted. rule check-privileged failed at path /spec/containers/0/securityContext/privileged/'
+>>> SUCCESS: bad-privileged pod was rejected by Kyverno as expected.
+
+[TEST 4] Applying violating manifest: root user (k8s/bad/bad-root.yaml)...
+Error from server: error when creating "k8s/bad/bad-root.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/default/bad-root-pod was blocked due to the following policies 
+
+require-non-root-user:
+  check-runAsNonRoot: 'validation error: Containers must run as a non-root user. ''securityContext.runAsNonRoot''
+    must be set to true. rule check-runAsNonRoot[0] failed at path /spec/securityContext/runAsNonRoot/
+    rule check-runAsNonRoot[1] failed at path /spec/containers/0/securityContext/'
+>>> SUCCESS: bad-root pod was rejected by Kyverno as expected.
+
+==================================================
+  ALL STAGE 1 TESTS PASSED! Evidence saved to docs/evidence/stage-1-rejection.txt
+==================================================
