@@ -88,11 +88,12 @@ jobs:
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
 
       # Step 9: Keyless Sign the Digest with Cosign
-      # Signs using GitHub OIDC token against Sigstore Fulcio/Rekor
+      # Authenticate cosign with GHCR and sign using GitHub OIDC against Fulcio/Rekor
       - name: Sign Image Digest with Cosign
         if: github.event_name != 'pull_request'
         env:
           IMAGE_DIGEST: ${{ steps.build-and-push.outputs.digest }}
         run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | cosign login ghcr.io -u "${{ github.actor }}" --password-stdin
           echo "Signing image by digest: ${REGISTRY}/${IMAGE_NAME}@${IMAGE_DIGEST}"
           cosign sign --yes "${REGISTRY}/${IMAGE_NAME}@${IMAGE_DIGEST}"
