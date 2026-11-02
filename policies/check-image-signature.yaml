@@ -25,5 +25,5 @@ spec:
             - issuer: "https://token.actions.githubusercontent.com"
               subjectRegExp: "https://github.com/vicGrey/signed-and-guarded/.*"
   validations:
-    - expression: "image.verified(attestor='github-actions-signer')"
+    - expression: "image.verified('github-actions-signer')"
       message: "Image signature verification failed: image must be signed by vicGrey/signed-and-guarded via GitHub Actions OIDC."
