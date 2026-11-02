@@ -1,0 +1,7 @@
+# Agent rules & local assistant instructions
+.agent/
+.agents/
+
+# Temporary and local environment files
+*.tmp
+.DS_Store
