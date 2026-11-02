@@ -1,0 +1,40 @@
+==================================================
+  STAGE 2 EVIDENCE: CI SUPPLY CHAIN & SIGNING PIPELINE
+  Timestamp: Mon Nov  2 11:22:00 UTC 2026
+==================================================
+
+[EVIDENCE 1: TRIVY CVE STOP-GATE]
+Vulnerable dependency (starlette==0.41.3) caught in CI runner before image push or signing:
+
+Library: starlette (METADATA)
+Vulnerabilities:
+  - CVE-2025-62727 (HIGH): starlette DoS via Range header merging (Fixed: 0.49.1)
+  - CVE-2026-48818 (HIGH): starlette SSRF and NTLM credential theft (Fixed: 1.1.0)
+  - CVE-2026-54283 (HIGH): starlette request.form() limits ignored (Fixed: 1.3.1)
+
+Pipeline action: Process completed with exit code 1.
+Result: Docker push skipped, Cosign sign skipped. Unfixed vulnerabilities never reach registry.
+
+[EVIDENCE 2: REMEDIATION & GREEN PIPELINE]
+Dependency bumped to starlette>=1.3.1 in requirements.txt.
+Workflow duration: 1m 7s
+Completed steps:
+  - Checkout code (SHA pinned)
+  - Gitleaks Secret Scan (0 leaks)
+  - Build Docker Image Locally
+  - Scan Image with Trivy (0 HIGH/CRITICAL vulnerabilities)
+  - Build and Push Docker Image (ghcr.io/vicgrey/signed-and-guarded)
+  - Sign Image Digest with Cosign (Keyless OIDC)
+
+[EVIDENCE 3: COSIGN LOCAL VERIFICATION]
+$ cosign verify ghcr.io/vicgrey/signed-and-guarded@sha256:aae3b520e2e68c2f6ab8a4bfe5982a7b16cde632267256af459b1e92b9108465 \
+  --certificate-identity-regexp="https://github.com/vicGrey/signed-and-guarded/.*" \
+  --certificate-oidc-issuer="https://token.actions.githubusercontent.com"
+
+Verification for ghcr.io/vicgrey/signed-and-guarded@sha256:aae3b520e2e68c2f6ab8a4bfe5982a7b16cde632267256af459b1e92b9108465 --
+The following checks were performed on each of these signatures:
+  - The cosign claims were validated
+  - Existence of the claims in the transparency log was verified offline
+  - The code-signing certificate was verified using trusted certificate authority certificates
+
+[{"critical":{"identity":{"docker-reference":"ghcr.io/vicgrey/signed-and-guarded@sha256:aae3b520e2e68c2f6ab8a4bfe5982a7b16cde632267256af459b1e92b9108465"},"image":{"docker-manifest-digest":"sha256:aae3b520e2e68c2f6ab8a4bfe5982a7b16cde632267256af459b1e92b9108465"},"type":"https://sigstore.dev/cosign/sign/v1"},"optional":{}}]
