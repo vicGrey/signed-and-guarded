@@ -1,0 +1,29 @@
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: check-image-signature
+spec:
+  failurePolicy: Fail
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "ghcr.io/vicgrey/signed-and-guarded*"
+  credentials:
+    secrets:
+      - ghcr-cred
+  attestors:
+    - name: github-actions-signer
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "https://github.com/vicGrey/signed-and-guarded/.*"
+  validations:
+    - expression: "image.verified(attestor='github-actions-signer')"
+      message: "Image signature verification failed: image must be signed by vicGrey/signed-and-guarded via GitHub Actions OIDC."
