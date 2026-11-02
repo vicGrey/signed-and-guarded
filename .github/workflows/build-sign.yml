@@ -82,6 +82,14 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
+      # Step 7.5: Push a real unsigned image to demonstrate admission controller rejection
+      - name: Push Unsigned Image to GHCR
+        if: github.event_name != 'pull_request'
+        run: |
+          docker pull python:3.12-alpine
+          docker tag python:3.12-alpine "${REGISTRY}/${IMAGE_NAME}:v1.0.0-unsigned"
+          docker push "${REGISTRY}/${IMAGE_NAME}:v1.0.0-unsigned"
+
       # Step 8: Install Cosign
       - name: Install Cosign
         if: github.event_name != 'pull_request'
