@@ -1,5 +1,5 @@
 # Stage 1: Build virtual environment dependencies
-FROM python:3.12-slim@sha256:7b98bfda68aa4a0658fd609c1fa6e9273413cf2003cce552eaadcb53f572aa5c AS builder
+FROM python:3.12-slim@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159 AS builder
 
 WORKDIR /build
 
@@ -7,7 +7,7 @@ COPY app/requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 # Stage 2: Distroless-style hardened runtime container
-FROM python:3.12-slim@sha256:7b98bfda68aa4a0658fd609c1fa6e9273413cf2003cce552eaadcb53f572aa5c AS runner
+FROM python:3.12-slim@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159 AS runner
 
 WORKDIR /app
 
