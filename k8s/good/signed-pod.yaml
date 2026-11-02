@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: signed-service-pod
+  labels:
+    app: signed-service
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    runAsGroup: 10001
+  containers:
+    - name: app
+      image: ghcr.io/vicgrey/signed-and-guarded:latest
+      ports:
+        - containerPort: 8000
+      securityContext:
+        allowPrivilegeEscalation: false
+        privileged: false
+        capabilities:
+          drop:
+            - ALL

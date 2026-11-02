@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: unsigned-service-pod
+  labels:
+    app: unsigned-service
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    runAsGroup: 10001
+  containers:
+    - name: app
+      # Busybox or an untrusted image trying to pretend to be part of the cluster
+      image: ghcr.io/vicgrey/signed-and-guarded:unsigned-fake
+      securityContext:
+        allowPrivilegeEscalation: false
+        privileged: false
+        capabilities:
+          drop:
+            - ALL
