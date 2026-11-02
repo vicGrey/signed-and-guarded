@@ -10,7 +10,7 @@ metadata:
       Privileged containers have access to all devices on the host and bypass
       nearly all security limitations. Containers must not run in privileged mode.
 spec:
-  validationFailureAction: Audit
+  validationFailureAction: Enforce
   background: true
   rules:
     - name: check-privileged

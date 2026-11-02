@@ -10,7 +10,7 @@ metadata:
       Containers must run as a non-root user to reduce the blast radius
       in the event of a container compromise.
 spec:
-  validationFailureAction: Audit
+  validationFailureAction: Enforce
   background: true
   rules:
     - name: check-runAsNonRoot
