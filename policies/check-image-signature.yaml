@@ -3,27 +3,30 @@ kind: ImageValidatingPolicy
 metadata:
   name: check-image-signature
 spec:
-  failurePolicy: Fail
   validationActions:
     - Deny
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
         apiVersions: ["v1"]
-        operations: ["CREATE", "UPDATE"]
         resources: ["pods"]
+        operations: ["CREATE", "UPDATE"]
   matchImageReferences:
     - glob: "ghcr.io/vicgrey/signed-and-guarded*"
   credentials:
     secrets:
       - ghcr-cred
   attestors:
-    - name: github-actions-signer
+    - name: cosign
       cosign:
         keyless:
           identities:
-            - issuer: "https://token.actions.githubusercontent.com"
-              subjectRegExp: "https://github.com/vicGrey/signed-and-guarded/.*"
+            - subjectRegExp: "https://github.com/vicGrey/signed-and-guarded/.*"
+              issuer: "https://token.actions.githubusercontent.com"
+        ctlog:
+          url: "https://rekor.sigstore.dev"
   validations:
-    - expression: "image.verified('github-actions-signer')"
+    - expression: >-
+        images.containers.map(image, verifyImageSignatures(image, [attestors.cosign])).all(e, e > 0)
       message: "Image signature verification failed: image must be signed by vicGrey/signed-and-guarded via GitHub Actions OIDC."
