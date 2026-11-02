@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 'feat/**'
   pull_request:
     branches:
       - main
@@ -70,7 +71,7 @@ jobs:
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
 
-      # Step 7: Push Image to GHCR (Only on push to main, after scans pass)
+      # Step 7: Push Image to GHCR (Only on push, after scans pass)
       - name: Build and Push Docker Image
         if: github.event_name != 'pull_request'
         id: build-and-push
@@ -79,8 +80,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
 
       # Step 7.5: Push a real unsigned image to demonstrate admission controller rejection
       - name: Push Unsigned Image to GHCR
