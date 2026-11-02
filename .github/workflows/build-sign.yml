@@ -81,7 +81,6 @@ jobs:
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
 
       # Step 7.5: Push a real unsigned image to demonstrate admission controller rejection
       - name: Push Unsigned Image to GHCR
