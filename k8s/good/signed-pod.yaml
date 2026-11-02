@@ -11,7 +11,7 @@ spec:
     runAsGroup: 10001
   containers:
     - name: app
-      image: ghcr.io/vicgrey/signed-and-guarded:latest
+      image: ghcr.io/vicgrey/signed-and-guarded@sha256:aae3b520e2e68c2f6ab8a4bfe5982a7b16cde632267256af459b1e92b9108465
       ports:
         - containerPort: 8000
       securityContext:
