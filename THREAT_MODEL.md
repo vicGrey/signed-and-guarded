@@ -64,7 +64,7 @@ Every threat and test maps to the stage sequence defined in `PLAN.md` (Stage 0 t
 - **Stage:** 3 & 5
 - **Verification tests:**
   - Attack test 1 (fork PR): Open PR from fork -> **Stopped at GitHub layer** (GitHub withholds `id-token: write` token; signing step fails before Kyverno).
-  - Attack test 2 (feature branch): Sign image on `refs/heads/feat-test` and deploy -> **Stopped at Kyverno** (valid signature, rejected on subject mismatch).
+  - Attack test 2 (feature branch): Sign image on `feat/untrusted-branch` (`k8s/bad/bad-branch-signed-pod.yaml`) and deploy -> **Stopped at Kyverno** (cryptographically valid signature, rejected on OIDC subject mismatch).
   - Attack test 3 (other repo or workflow file): Sign from alternate workflow or repo and deploy -> **Stopped at Kyverno** (subject mismatch).
 
 ### T-04: Known vulnerable base image or dependency

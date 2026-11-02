@@ -81,6 +81,7 @@ As defined in `THREAT_MODEL.md`, cryptographic image signatures guarantee **work
 | **Stage 2** | GitHub Actions + Sigstore | Gitleaks + Trivy scan + keyless Cosign signing by `@sha256` digest | `.github/workflows/build-sign.yml` | **Signed & Logged** | [`stage-2-ci-pipeline.txt`](docs/evidence/stage-2-ci-pipeline.txt) |
 | **Stage 3** | Kyverno `ImageValidatingPolicy` | Admit GHCR image signed by trusted `main` workflow OIDC identity | `k8s/good/signed-pod.yaml` | **Admitted** | [`stage-3-signature-enforcement.txt`](docs/evidence/stage-3-signature-enforcement.txt) |
 | **Stage 3** | Kyverno `ImageValidatingPolicy` | Reject unsigned image pushed directly to GHCR | `k8s/bad/unsigned-pod.yaml` | **Rejected** | [`stage-3-signature-enforcement.txt`](docs/evidence/stage-3-signature-enforcement.txt) |
+| **Stage 3** | Kyverno `ImageValidatingPolicy` | Reject signed image from untrusted branch (OIDC subject mismatch) | `k8s/bad/bad-branch-signed-pod.yaml` | **Rejected** | [`stage-3-signature-enforcement.txt`](docs/evidence/stage-3-signature-enforcement.txt) |
 | **Stage 4** | Attack Testing | Adversarial bypass attempts and edge-case testing | `FINDINGS.md` | In Progress | [`FINDINGS.md`](FINDINGS.md) |
 | **Stage 5** | AWS EKS Port | Port to AWS EKS with GitHub OIDC to IAM & ECR Immutability | `k8s/` | Planned | `PLAN.md` |
 

@@ -8,13 +8,41 @@ $ kubectl apply -f k8s/good/signed-pod.yaml
 pod/signed-service-pod created
 >>> SUCCESS: Valid keyless signature from GitHub Actions OIDC on main admitted.
 
-[POD RUNNING STATE]
+[POD RUNNING STATE & IMMUTABLE DIGEST VERIFICATION (T-02)]
 $ kubectl get pods
 NAME                 READY   STATUS    RESTARTS   AGE
 signed-service-pod   1/1     Running   0          56s
 
-[TEST 2: APPLY REAL UNSIGNED IMAGE FROM REGISTRY]
-Direct registry push (T-01) bypass test deploying real unsigned image:
+$ kubectl get pod signed-service-pod -o jsonpath='{.spec.containers[0].image}' && echo ""
+ghcr.io/vicgrey/signed-and-guarded@sha256:aae3b520e2e68c2f6ab8a4bfe5982a7b16cde632267256af459b1e92b9108465
+
+$ kubectl get pod signed-service-pod -o yaml | grep -A 5 -B 2 "image:"
+spec:
+  containers:
+  - image: ghcr.io/vicgrey/signed-and-guarded@sha256:aae3b520e2e68c2f6ab8a4bfe5982a7b16cde632267256af459b1e92b9108465
+    imagePullPolicy: IfNotPresent
+    name: app
+    ports:
+    - containerPort: 8000
+      protocol: TCP
+--
+  containerStatuses:
+  - containerID: containerd://d776c1de58258c5fb5a164e0155ac6ba6c046c6574080defbc86e0f4ad7e6d17
+    image: sha256:a6a14e26a77f7abe468eea439261b81292771a694a6a2f01e52ca4353a412bdb
+    imageID: ghcr.io/vicgrey/signed-and-guarded@sha256:aae3b520e2e68c2f6ab8a4bfe5982a7b16cde632267256af459b1e92b9108465
+>>> SUCCESS: Pod spec and containerd runtime confirm execution pinned strictly to immutable sha256 digest.
+
+[TEST 2: APPLY REAL UNSIGNED IMAGE FROM REGISTRY (T-01)]
+Direct registry push bypass test deploying real unsigned image:
 $ kubectl apply -f k8s/bad/unsigned-pod.yaml
 Error from server: error when creating "k8s/bad/unsigned-pod.yaml": admission webhook "ivpol.validate.kyverno.svc-fail" denied the request: Policy check-image-signature failed: Image signature verification failed: image must be signed by vicGrey/signed-and-guarded via GitHub Actions OIDC on main.
 >>> SUCCESS: Cryptographically verified denial by modern Kyverno ImageValidatingPolicy CEL engine.
+
+[TEST 3: APPLY VALIDLY SIGNED IMAGE FROM FEATURE BRANCH (T-03)]
+Testing unauthorized workflow / branch bypass using real signed image from feat/untrusted-branch:
+Image digest: sha256:21d72ae61f704c8600ab76f9d23304b9ccf34f7fd93e02a66dfdc0d168132284
+Certificate subject: https://github.com/vicGrey/signed-and-guarded/.github/workflows/build-sign.yml@refs/heads/feat/untrusted-branch
+
+$ kubectl apply -f k8s/bad/bad-branch-signed-pod.yaml
+Error from server: error when creating "k8s/bad/bad-branch-signed-pod.yaml": admission webhook "ivpol.validate.kyverno.svc-fail" denied the request: Policy check-image-signature failed: Image signature verification failed: image must be signed by vicGrey/signed-and-guarded via GitHub Actions OIDC on main.
+>>> SUCCESS: Kyverno validates OIDC subject claim, denying valid Sigstore signatures not originating from main branch.
