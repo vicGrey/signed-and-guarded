@@ -96,7 +96,7 @@ Every threat and test maps to the stage sequence defined in `PLAN.md` (Stage 0 t
 - **Security control and honest limits:** Numeric non-root user (`USER 10001`) in Dockerfile (required so Kubernetes `runAsNonRoot` can verify UID without starting the container) + Kyverno policies blocking privileged pods and enforcing `runAsNonRoot: true`.
 - **Enforcement layer:** Dockerfile + Kyverno
 - **Stage:** 1
-- **Verification test:** Apply `k8s/bad/privileged-pod.yaml` and `k8s/bad/root-pod.yaml` -> **Rejected by Kyverno**.
+- **Verification test:** Apply `k8s/bad/bad-privileged.yaml` and `k8s/bad/bad-root.yaml` -> **Rejected by Kyverno**.
 
 ### T-07: Compromised long-lived cloud credentials
 

@@ -13,7 +13,8 @@ spec:
         resources: ["pods"]
         operations: ["CREATE", "UPDATE"]
   matchImageReferences:
-    - glob: "ghcr.io/vicgrey/signed-and-guarded*"
+    - glob: "ghcr.io/vicgrey/signed-and-guarded:*"
+    - glob: "ghcr.io/vicgrey/signed-and-guarded@*"
   credentials:
     secrets:
       - ghcr-cred
@@ -22,11 +23,11 @@ spec:
       cosign:
         keyless:
           identities:
-            - subjectRegExp: "https://github.com/vicGrey/signed-and-guarded/.*"
+            - subjectRegExp: "^https://github\\.com/vicGrey/signed-and-guarded/\\.github/workflows/.*@refs/heads/main$"
               issuer: "https://token.actions.githubusercontent.com"
         ctlog:
           url: "https://rekor.sigstore.dev"
   validations:
     - expression: >-
         images.containers.map(image, verifyImageSignatures(image, [attestors.cosign])).all(e, e > 0)
-      message: "Image signature verification failed: image must be signed by vicGrey/signed-and-guarded via GitHub Actions OIDC."
+      message: "Image signature verification failed: image must be signed by vicGrey/signed-and-guarded via GitHub Actions OIDC on main."

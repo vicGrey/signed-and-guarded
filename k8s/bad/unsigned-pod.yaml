@@ -11,8 +11,7 @@ spec:
     runAsGroup: 10001
   containers:
     - name: app
-      # Busybox or an untrusted image trying to pretend to be part of the cluster
-      image: ghcr.io/vicgrey/signed-and-guarded:unsigned-fake
+      image: ghcr.io/vicgrey/signed-and-guarded:v1.0.0-unsigned
       securityContext:
         allowPrivilegeEscalation: false
         privileged: false
