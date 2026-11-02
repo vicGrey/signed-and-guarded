@@ -96,4 +96,4 @@ jobs:
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | cosign login ghcr.io -u "${{ github.actor }}" --password-stdin
           echo "Signing image by digest: ${REGISTRY}/${IMAGE_NAME}@${IMAGE_DIGEST}"
-          cosign sign --yes "${REGISTRY}/${IMAGE_NAME}@${IMAGE_DIGEST}"
+          cosign sign -d --yes "${REGISTRY}/${IMAGE_NAME}@${IMAGE_DIGEST}"
